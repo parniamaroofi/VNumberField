@@ -1,12 +1,8 @@
 <template>
-  <div class="number-field">
+  <div class="money-field">
     <v-text-field
       type="tel"
       pattern="[0-9\u0660-\u0669\u06F0-\u06F9]+([\.,][0-9\u0660-\u0669\u06F0-\u06F9]+)?"
-      v-model="fieldValue"
-      @input="updateValue"
-      @keydown="preventLetters"
-      @blur="max ? checkMaxVlue() : ''"
       :dir="appendLabel ? 'ltr' : 'rtl'"
       :label="label ? label : undefined"
       :color="color ? color : undefined"
@@ -15,6 +11,10 @@
       :maxlength="maxlength ? maxlength : undefined"
       :hide-details="hideDetails ? hideDetails : false"
       :placeholder="placeholder ? placeholder : undefined"
+      v-model="fieldValue"
+      @input="updateValue"
+      @keydown="preventLetters"
+      @blur="max ? checkMaxVlue() : ''"
       :oninput="
         maxlength
           ? 'javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);'
@@ -55,11 +55,11 @@ export default {
   methods: {
     updateValue(event) {
       var NumberRegex = /[^0-9\u0660-\u0669\u06F0-\u06F9]/g;
-      if (!NumberRegex.test(Number(event.data))) {
+      if (!NumberRegex.test(parseFloat(event.data))) {
         if (this.separator) {
           this.$emit(
             "update:modelValue",
-            Number(event.target.value.replaceAll(",", ""))
+            parseFloat(event.target.value.replaceAll(",", ""))
           );
         } else {
           this.$emit(
@@ -77,10 +77,17 @@ export default {
     },
 
     preventLetters(event) {
+      console.log(event);
       const isNumber = event.key.match(/[0-9\u0660-\u0669\u06F0-\u06F9]/);
       if (
         isNumber ||
+        event.key == "." ||
+        event.key == "End" ||
+        event.key == "Home" ||
+        event.key == "Delete" ||
         event.key == "Backspace" ||
+        event.key == "ArrowLeft" ||
+        event.key == "ArrowRight" ||
         (event.ctrlKey && (event.code === "KeyV" || event.key === "v")) ||
         (event.ctrlKey && (event.code === "KeyC" || event.key === "c")) ||
         (event.ctrlKey && event.code === "KeyX") ||
@@ -122,7 +129,7 @@ export default {
 
         if (this.separator) {
           return this.modelValue
-            ? Number(
+            ? parseFloat(
                 this.modelValue.toString().replaceAll(",", "")
               ).toLocaleString()
             : "";
@@ -141,7 +148,7 @@ export default {
 </script>
 
 <style lang="scss">
-.number-field {
+.money-field {
   input {
     padding-left: 5px !important;
   }
